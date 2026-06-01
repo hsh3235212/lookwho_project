@@ -1,0 +1,759 @@
+/* ==========================================================================
+   LOOKWHO: Immersive Exhibition Cinematic Style Sheet
+   Inspired by Apple Minimalism, Editorial Design & Immersive Exhibitions
+   ========================================================================== */
+
+:root {
+  /* 극단적이고 엄숙한 All-Black 갤러리 배색 */
+  --bg-black: #050505;
+  --bg-dark-gray: #0f1013;
+  --border-editorial: rgba(255, 255, 255, 0.08); /* 얇고 세련된 1px 분할선 */
+  --border-light: rgba(255, 255, 255, 0.04);
+  
+  /* 애플 감성의 정적이고 조용한 샌드/화이트 텍스트 */
+  --text-white: #f3f3f5;
+  --text-grey: #8e9196;
+  --text-muted: #4e5156;
+  
+  /* 조용하고 품격 있는 샌드 브론즈 포인트 */
+  --brand-bronze: #a89a87;
+  --brand-bronze-dim: rgba(168, 154, 135, 0.15);
+  
+  /* 폰트 로딩으로 인한 레이아웃 깨짐을 방지하는 시스템 폰트 우선 스택 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-title: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  --transition-cinematic: all 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-fast: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Base Exhibition Setup */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #000;
+  color: var(--text-white);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Solid Black 고정 배경 베이스 레이어 (렌더링 튐 원천 방지) */
+#blackBase {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+.reset-all-btn {
+  position: absolute;
+  top: 44px;
+  left: 48px;
+  z-index: 10;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: color 0.3s ease;
+}
+
+.reset-all-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.exhibit-section {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  
+  /* 스크린 자체는 항상 완전 투명이며, opacity 애니메이션을 절대 겪지 않음 */
+  background-color: transparent;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+  
+  /* GPU 하드웨어 가속 레이어로 강제 격리 */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 준비 상태 (전환 시작 전에 높은 z-index로 DOM에 대기) */
+.exhibit-section.prepare {
+  z-index: 2;
+}
+
+/* 활성화 상태 (포인터 활성 및 높은 z-index로 승격) */
+.exhibit-section.active {
+  pointer-events: auto;
+  z-index: 3;
+}
+
+/* 로고 화면은 사라질 때 자체 opacity 페이드아웃 */
+#logoScreen {
+  opacity: 1;
+  transition: opacity 1.1s ease;
+}
+
+.logo-wrapper.logo-fade-out {
+  /* 시장의 상인입니다(role-hide)와 완전히 동일한 페이드아웃 및 위로 살짝 올라가는 효과 (-8px) */
+  animation: logoLineOut 1.5s ease-out forwards !important;
+}
+
+/* 인트로 영상 스킵 시 opacity 블렌딩으로 인한 회색/탁해짐(Milky effect) 방지 */
+#introScreen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 1.1s ease;
+}
+
+#introScreen.cinematic-fade-out::after {
+  opacity: 1;
+}
+
+/* 비디오를 포함한 전체 컨테이너를 미세하게 translateY(-12px) 이동시키면, 
+   브라우저 렌더링(픽셀 스내핑) 문제로 영상이 투툭 끊기는(Stutter) 현상이 발생합니다.
+   따라서 부드러운 암전을 위해 transform 애니메이션은 제거하고 순수하게 검은막 페이드아웃만 적용합니다. */
+
+/* 로고 슬로건(완벽한 몰입. 더 깊은 대화.) 크기 조금 더 확대 (1.08배) 및 로고와의 간격 좁힘 */
+#korean-subtitle {
+  transform-origin: center;
+  transform-box: fill-box;
+  transform: scale(1.08) translateY(-25px);
+}
+
+/* 모든 텍스트 외곽선 및 그림자 강제 제거 (솔리드 스타일) */
+body {
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ==========================================================================
+   스크린 내부 콘텐츠 독립 페이드 시스템 (Solid Black 배경 보존용)
+   ========================================================================== */
+.exhibit-section .welcome-minimal-content,
+.exhibit-section .start-logo-mark,
+.exhibit-section .intro-video-wrapper,
+.exhibit-section .intro-caption-container,
+.exhibit-section .skip-btn,
+.exhibit-section .logo-content,
+.exhibit-section .immersion-content-wrapper,
+.exhibit-section .guided-header,
+.exhibit-section .guided-exhibit-container,
+.exhibit-section .real-header,
+.exhibit-section .real-layout-grid {
+  opacity: 0;
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: opacity 1500ms cubic-bezier(0.22, 1, 0.36, 1), transform 1500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.exhibit-section.active .welcome-minimal-content,
+.exhibit-section.active .intro-video-wrapper,
+.exhibit-section.active .intro-caption-container,
+.exhibit-section.active .skip-btn,
+.exhibit-section.active .logo-content,
+.exhibit-section.active .immersion-content-wrapper,
+.exhibit-section.active .guided-header,
+.exhibit-section.active .guided-exhibit-container,
+.exhibit-section.active .real-header,
+.exhibit-section.active .real-layout-grid {
+  opacity: 1;
+  transform: translateZ(0);
+}
+
+.exhibit-section.active .start-logo-mark {
+
+  opacity: 0.3;
+  transform: translateZ(0);
+}
+
+/* prefers-reduced-motion 대응 (OS 모션 감축 환경 감지 시 즉각 단축 전환) */
+@media (prefers-reduced-motion: reduce) {
+  .exhibit-section .welcome-minimal-content,
+  .exhibit-section .intro-video-wrapper,
+  .exhibit-section .intro-caption-container,
+  .exhibit-section .skip-btn,
+  .exhibit-section .logo-content,
+  .exhibit-section .immersion-content-wrapper,
+  .exhibit-section .guided-header,
+  .exhibit-section .guided-exhibit-container,
+  .exhibit-section .real-header,
+  .exhibit-section .real-layout-grid {
+    transition: opacity 100ms linear !important;
+    will-change: auto;
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   1. START SCREEN (Apple Dark Hero Section — 절대적 미니멀)
+   ========================================================================== */
+#startScreen {
+  background-color: #000;
+}
+
+/* 좌측 상단 조용한 로고 마크 */
+.start-logo-mark {
+  position: absolute;
+  top: 44px;
+  left: 48px;
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: rgba(245, 245, 247, 1); /* 불투명 흰색으로 세팅 (스크린 active 상태의 opacity 0.3을 반영함) */
+  z-index: 5;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 검은 공간 속 단 하나의 조용한 문장 그룹 */
+.welcome-minimal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  
+  /* 화면 정중앙 배치 (오프셋 제거) */
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 스타트 스크린 페이드아웃 상태 — 다음 화면(z-index: 3)보다 높게 유지하여 크로스페이드가 정상 렌더링되도록 보장 */
+#startScreen.fade-out {
+  z-index: 4 !important;
+  pointer-events: none;
+}
+
+#startScreen.fade-out .welcome-minimal-content,
+#startScreen.fade-out .start-logo-mark {
+  opacity: 0 !important;
+  transform: translateY(-2vh) translateZ(0) !important;
+}
+
+/* 헤드폰 미니 아이콘: 극도의 미니멀리즘 시네마틱 18px */
+.welcome-mini-icon {
+  font-size: 18px;
+  color: rgba(245, 245, 247, 1);
+  opacity: 0.65; /* 아주 조용하고 은은한 투명도 */
+  margin-bottom: 16px; /* 문구와의 우아하고 밀접한 여백 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 메인 문구: Apple crisp + Toss clarity — 선명하고 즉각적 */
+.welcome-mini-title {
+  font-family: var(--font-sans);
+  font-size: 32px;
+  font-weight: 300; /* Apple 스타일의 얇고 우아한 두께 */
+  letter-spacing: -0.03em;
+  color: rgba(245, 245, 247, 0.92);
+  margin-bottom: 1px;
+  line-height: 1.35;
+}
+
+/* 영문 안내 서브 문구: 은은한 회색의 서브 헤더 */
+.welcome-mini-subtitle {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: rgba(245, 245, 247, 0.45); /* 은은한 고급 실버그레이 */
+  margin-bottom: 56px; /* 서브 문구와 START 사이의 절제되고 긴장감 있는 간격 */
+  line-height: 1.4;
+}
+
+/* START 버튼 — 공간 안에 조용히 존재하는 ghost capsule interaction object */
+.welcome-text-btn {
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(245, 245, 247, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em; /* 자간 보정 */
+  cursor: pointer;
+  padding: 14px 34px;
+  transition:
+    background 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.welcome-text-btn:hover {
+  background: rgba(255, 255, 255, 0.07); /* 아주 미세하게만 밝아짐 */
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: scale(1.015); /* 최대 1.015, 살아있음을 느낄 정도의 숨결만 허용 */
+}
+
+.welcome-text-btn:active {
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   2. INTRO VIDEO SCREEN (비디오 Exposure Reveal 기법)
+   ========================================================================== */
+#introScreen {
+  background-color: transparent;
+}
+
+.intro-video-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background-color: #000;
+  
+  /* 어두운 공간 안에서 초점을 찾아가는 exposure adapting 초기 상태 */
+  opacity: 0;
+  filter: blur(14px) brightness(0.4);
+  
+  /* GPU 하드웨어 가속 레이어 선언 */
+  will-change: opacity, filter, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  
+  /* 2.8초 시네마틱 exposure reveal (호흡을 더 천천히) */
+  transition:
+    opacity 2600ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 2800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 인트로 비디오가 천천히 초점을 찾으며 드러남 */
+#introScreen.active .intro-video-wrapper {
+  opacity: 1;
+  filter: blur(0px) brightness(1);
+}
+
+#introScreen video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 미니멀 자막 스타일 */
+.intro-caption-container {
+  position: absolute;
+  bottom: 22%;
+  width: 100%;
+  text-align: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.intro-caption-text {
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 200;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+  opacity: 0;
+  transform: translateY(8px) translateZ(0);
+  
+  /* GPU 하드웨어 가속 레이어화 */
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  
+  /* 1200ms 동안 레이아웃을 변경하지 않는 은은한 크로스페이드 트랜지션 */
+  transition: 
+    opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.intro-caption-text.show {
+  opacity: 1;
+  transform: translateY(0px) translateZ(0);
+}
+
+/* SKIP 버튼 스타일 */
+.skip-btn {
+  position: absolute;
+  bottom: 45px;
+  right: 60px;
+  z-index: 5; /* ensure above video */
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: var(--font-title);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: var(--transition-fast);
+}
+
+.skip-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================================================
+   3. LOGO SCREEN
+   ========================================================================== */
+#logoScreen {
+  background-color: #000; /* 완전한 검정 */
+  width: 100%;
+  height: 100vh; /* 전체 화면 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* roleScreen layout */
+#roleScreen {
+  background-color: #000; /* 검은 배경 */
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.role-wrapper {
+  position: relative;
+  text-align: center;
+  /* opacity 애니메이션은 개별 .role-line 에서 처리 */
+}
+
+.role-line {
+  position: absolute;        /* 두 문장을 동일 위치에 겹침 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  opacity: 0;
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 26px;
+  line-height: 1.55;
+  letter-spacing: -0.02em;
+  color: rgba(245,245,247,0.86);
+  margin: 0;
+  text-align: center;
+}
+
+/* fade in: 아래에서 중앙으로 올라오며 등장 */
+@keyframes roleLineIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* fade out: 중앙에서 위로 올라가며 사라짐 */
+@keyframes roleLineOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 12px));
+  }
+}
+
+.role-line.role-show {
+  animation: roleLineIn 1.1s ease forwards;
+}
+
+.role-line.role-hide {
+  animation: roleLineOut 1.1s ease forwards;
+}
+
+/* fade-out helper for logo wrapper */
+.fade-out {
+  opacity: 0;
+  transition: opacity 1.1s;
+}
+
+@keyframes fadeInWrapper {
+  to { opacity: 1; }
+}
+
+/* logo wrapper sizing and animation */
+.logo-wrapper {
+  position: relative;
+  width: min(92vw, 820px);
+  aspect-ratio: 2407 / 1354;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(12px);
+}
+.logo-wrapper svg {
+  display: block; width: 100%; height: 100%;
+}
+
+#logoScreen.active .logo-wrapper {
+  animation: logoLineIn 1.1s ease forwards;
+}
+
+@keyframes logoLineIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logoLineOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* ── SVG 그리기 (Draw) 모션 엔진 ────────────────────────────────── */
+@keyframes drawStroke {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drawFill {
+  to { fill-opacity: 1; }
+}
+
+#logoScreen.active .anim-el {
+  fill-opacity: 0;
+  stroke: rgba(180,178,172,0.40); /* 프리미엄 소프트 그레이 */
+  stroke-width: 1.5;
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  animation:
+    drawStroke 1.6s cubic-bezier(0.65,0,0.35,1) forwards,
+    drawFill   0.7s ease forwards;
+  animation-delay:
+    calc(var(--i) * 120ms),
+    calc(var(--i) * 120ms + 1200ms);
+}
+
+/* ==========================================================================
+   4. ROLE IMMERSION (역할 부여 화면)
+   ========================================================================== */
+#immersionScreen {
+  background-color: var(--bg-black);
+}
+
+.immersion-content-wrapper {
+  text-align: center;
+  max-width: 80%;
+  position: relative;
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.immersion-slide-text {
+  position: absolute; /* 두 텍스트가 겹치도록 절대 위치화 */
+  font-family: var(--font-sans);
+  font-size: 1.45rem;
+  font-weight: 200;
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+  color: var(--text-white);
+  opacity: 0;
+  transform: translateY(8px) translateZ(0);
+  
+  /* GPU 하드웨어 가속 레이어화 */
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  
+  /* layout을 손대지 않는 1200ms 은은한 opacity & transform 크로스페이드 */
+  transition: 
+    opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1200ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.immersion-slide-text.show {
+  opacity: 1;
+  transform: translateY(0px) translateZ(0);
+  pointer-events: auto;
+}
+
+/* display: none 개입을 전면 배제하여 브라우저 리플로우(Reflow) 완전 예방 */
+.immersion-slide-text.hidden {
+  opacity: 0;
+  transform: translateY(-8px) translateZ(0);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   5. MARKET HUD EXPERIENCE (AI 손님 인터랙션)
+   ========================================================================== */
+#marketHudScreen {
+  background-color: var(--bg-black);
+}
+
+#marketHudScreen video {
+  display: none;
+}
+
+#appContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  opacity: 0;
+  transition: opacity 2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#appContainer.show {
+  opacity: 1;
+}
+
+#appContainer canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#videoCanvas {
+  z-index: 1;
+}
+
+#blurCanvas {
+  z-index: 2;
+  -webkit-filter: blur(14px) saturate(0.9);
+  filter: blur(14px) saturate(0.9);
+  pointer-events: none;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  will-change: mask-image, -webkit-mask-image;
+}
+
+#hudCanvas {
+  z-index: 3;
+  pointer-events: none;
+}
+
+#roleplayOverlay {
+  position: absolute; /* changed from fixed to absolute to stay inside screen */
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.68);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#roleplayOverlay.show {
+  opacity: 1;
+}
+
+#roleplayText {
+  font-size: 28px;
+  font-weight: 300;
+  color: rgba(245, 245, 247, 0.92);
+  line-height: 1.5;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+#priceIndicator {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  transform: translateY(15px) scale(0.96);
+  z-index: 40;
+  padding: 16px 36px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: white;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  opacity: 0;
+  transition: 0.55s cubic-bezier(.16, 1, .3, 1);
+  pointer-events: none;
+}
+
+#priceIndicator.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ==========================================================================
+   6. GLOBAL UI ELEMENTS (공통 UI)
+   ========================================================================== */
+.reset-exhibit-btn-left {
+  position: absolute;
+  top: 44px;
+  left: 48px;
+  background: transparent;
+  border: 1px solid var(--border-editorial);
+  color: var(--text-grey);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-family: var(--font-title);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition-fast);
+}
+
+.reset-exhibit-btn-left:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: scale(1.015);
+}
+
